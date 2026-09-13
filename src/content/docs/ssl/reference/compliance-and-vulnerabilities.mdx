@@ -173,8 +173,8 @@ PCI DSS v4.0 introduced two requirements for scripts running in the consumer's b
 
 | Requirement | Description | Cloudflare feature |
 | --- | --- | --- |
-| **6.4.3** | Maintain an inventory of all scripts on payment pages, with authorization and integrity checks | Client-Side Security Advanced |
-| **11.6.1** | Detect and alert on unauthorized changes to HTTP security headers and payment page content | Client-Side Security Advanced |
+| **6.4.3** | Maintain an inventory of all scripts on payment pages, with authorization and integrity checks | Page Shield |
+| **11.6.1** | Detect and alert on unauthorized changes to HTTP security headers and payment page content | Page Shield |
 
 Refer to [Client-side security and PCI DSS compliance](/client-side-security/reference/pci-dss/) for setup guidance.
 
@@ -184,7 +184,7 @@ PCI DSS requires quarterly vulnerability scans by an Approved Scanning Vendor (A
 
 ### TCP source port behavior
 
-Some ASV tools report a **TCP Source Port Pass Firewall** finding against Cloudflare-proxied IP addresses. This is a false positive caused by how source port selection works in Cloudflare's reverse proxy infrastructure, not a vulnerability in your environment.
+Some ASV tools report a **TCP Source Port Pass Firewall** finding against Cloudflare-proxied IP addresses. This is a false positive caused by how Cloudflare's anycast network handles TCP connections — the behavior is a property of Cloudflare's infrastructure, not a vulnerability in your environment.
 
 If your QSA or scanning tool flags this finding, provide:
 
@@ -206,8 +206,6 @@ To allow a scan without disabling your WAF:
 :::caution
 Keep the WAF exception as narrow as possible — scoped to the scanner's IP range only. Remove it as soon as scanning is complete.
 :::
-
-Cloudflare's WAF may block attack-pattern traffic used by ASV scanners. If scanning is impacted, work with your ASV and QSA to determine the appropriate exception handling.
 
 ### Non-standard ports
 
@@ -255,6 +253,4 @@ If a scanner flags Sweet32, verify that TLS 1.0 is disabled on your zone. Refer 
 
 ### `_cfuvid` cookie missing Secure flag
 
-Cloudflare sets the `_cfuvid` cookie on some zones for rate limiting. When a scanner accesses your site over HTTP, it may report this cookie as missing the `Secure` attribute. On HTTPS connections, the `Secure` flag is set correctly — this is a scanner methodology artifact from testing HTTP rather than HTTPS.
-
-To prevent this finding: ensure your zone redirects all HTTP traffic to HTTPS before scanning, and configure your ASV to scan HTTPS endpoints. Refer to [Always Use HTTPS](/ssl/edge-certificates/additional-options/always-use-https/) for setup steps.
+Cloudflare sets the `_cfuvid` cookie on some zones for rate limiting. Some scanners may report this cookie as missing the `Secure` attribute if they scan over HTTP. If your ASV raises this finding, confirm that your ASV is scanning HTTPS endpoints and that your zone redirects HTTP traffic to HTTPS. Refer to [Always Use HTTPS](/ssl/edge-certificates/additional-options/always-use-https/) for setup steps.
